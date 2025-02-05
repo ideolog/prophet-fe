@@ -10,6 +10,9 @@
   },
   "dependencies": {
     "@floating-ui/react-dom": "^2.1.1",
+    "@solana/wallet-adapter-base": "^0.9.23",
+    "@solana/wallet-standard": "^1.1.4",
+    "boring-avatars": "^1.11.2",
     "classnames": "^2.5.1",
     "compressorjs": "^1.2.1",
     "next": "15.1.4",

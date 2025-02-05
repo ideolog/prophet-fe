@@ -124,16 +124,18 @@ export default function Home() {
           <Logo size="m" icon={false} href="https://once-ui.com" />
           <Row gap="12" hide="s">
             <Button
-              href="/markets"
+              href="https://discord.com/invite/5EyAQ4eNdS"
+              prefixIcon="discord"
               size="s"
-              label="Markets"
+              label="Discord"
               weight="default"
               variant="tertiary"
             />
             <Button
-              href="/create-claim"
+              href="https://github.com/once-ui-system/nextjs-starter"
+              prefixIcon="github"
               size="s"
-              label="Create claim"
+              label="GitHub"
               weight="default"
               variant="tertiary"
             />
