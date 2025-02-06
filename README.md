@@ -1,62 +1,79 @@
-# Once UI for Next.js
+# Prophet Frontend
 
-A thoughtfully crafted design system that eliminates complexity while maximizing flexibility.
+This is the frontend for **Prophet**, a decentralized platform where users can create, refine, and trade narrative claims. The platform integrates with crypto wallets for seamless user interactions and utilizes smart contract logic for transparent and immutable transactions.
 
+## Live Project
+TBD
 
-![Once UI](public/images/cover.jpg)
+## Table of Contents
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Key Features](#key-features)
+- [Getting Started](#getting-started)
+- [License](#license)
 
-# Features
+## Tech Stack
+- **Next.js** – Framework for server-rendered React applications
+- **TypeScript** – Static typing for JavaScript
+- **Tailwind CSS** – Utility-first CSS framework
+- **Solana Phantom Wallet Integration** – Crypto wallet connection for transactions
+- **REST API** – Backend communication
 
-Start building your Next.js app in minutes with: 
-* **A robust token and style system** that simplifies customization and ensures consistency. 
-* **A copy-and-paste component library** that integrates seamlessly into your project.
-* **Interactive documentation** to apply your branding and set component properties.
-
-# Demo
-[demo.once-ui.com](https://demo.once-ui.com)
-
-![Once UI](public/images/demo.png)
-
-# Getting started
-Clone the starter template from GitHub.
-```bash
-git clone https://github.com/once-ui-system/nextjs-starter.git
+## Project Structure
+```
+.
+├── src
+│   ├── app
+│   │   ├── claims                # Claim Detail Pages
+│   │   ├── create-claim          # Page for Creating New Claims
+│   │   ├── markets               # List of Active Markets
+│   │   └── layout.tsx            # Main Application Layout
+│   ├── components                # Reusable UI Components
+│   │   ├── ClaimList.tsx
+│   │   ├── PhantomWalletConnect.tsx
+│   │   └── ProphetNavigation.tsx
+│   ├── once-ui                   # Custom UI Library
+│   ├── semantic                  # Claim Validation Logic
+│   └── styles                    # Global Styles and Tokens
+├── public                        # Static Assets
+├── package.json                  # Project Dependencies
+└── tsconfig.json                 # TypeScript Configuration
 ```
 
-You can also deploy it directly to Vercel.
+## Key Features
+- **Claim Creation & Refinement**: Users submit claims that are refined using AI suggestions.
+- **Market Trading**: Buy TRUE/FALSE shares in claims using SOL, following bonding curve logic for dynamic pricing.
+- **Phantom Wallet Integration**: Connect your Solana wallet to interact with the platform.
+- **Dynamic Pricing**: Prices adjust based on market demand using a bonding curve model.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fonce-ui-system%2Fnextjs-starter&redirect-url=https%3A%2F%2Fonce-ui.com%2Fdocs%2F)
+## Getting Started
 
+### Prerequisites
+- Node.js (v16+)
+- Yarn or npm
 
-View the step-by-step guide at [once-ui.com/docs](https://once-ui.com/docs).
+### Installation
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/ideolog/prophet-fe.git
+   cd prophet-fe
+   ```
 
-# Documentation
-[once-ui.com/docs](https://once-ui.com/docs)
+2. **Install dependencies:**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
-# Authors
-Connect with us!
+3. **Run the development server:**
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
 
-Lorant One: [Site](https://lorant.one), [Threads](https://www.threads.net/@lorant.one), [LinkedIn](https://www.linkedin.com/in/lorant-one/)  
-Zsofia Komaromi: [Site](https://zsofia.pro), [Threads](https://www.threads.net/@zsofia_kom), [LinkedIn](https://www.linkedin.com/in/zsofiakomaromi/)
+4. **Visit:** [http://localhost:3000](http://localhost:3000)
 
-# Get involved
-- Join the [Design Engineers Club](https://discord.com/invite/5EyAQ4eNdS) on Discord to connect with designers, developers and share your projects.
-- Report a [bug](https://github.com/once-ui-system/nextjs-starter/issues/new?labels=bug&template=bug_report.md).
-- Submit a [feature request](https://github.com/once-ui-system/nextjs-starter/issues/new?labels=feature%20request&template=feature_request.md).
-
-# License
-
-Distributed under the MIT License. See `LICENSE.txt` for more information.
-
-# Sponsors
-
-[github.com/sponsors/once-ui-system](https://github.com/sponsors/once-ui-system)
-
-Become a sponsor and help us continue to develop and maintain this project.
-
-# Once UI for Figma
-
-Once UI is also available for Figma.  
-Design and prototype entire products from scratch in hours. Use the same tokens and components as the Next.js design system.
-
-Start designing: [Once UI for Figma](https://once-ui.com/figma).
+## License
+This project is licensed by **crowdprophet.io**.
