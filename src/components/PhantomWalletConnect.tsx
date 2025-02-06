@@ -2,7 +2,7 @@
 
 import { useEffect, useState, createContext, useContext } from "react";
 import { Button, Flex, Text, UserMenu, Option, Avatar, Line } from "@/once-ui/components";
-import { signIn, signOut } from "@solana/wallet-standard";
+import jazzicon from "@metamask/jazzicon";
 
 const WalletContext = createContext(null);
 
@@ -63,6 +63,33 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
 export default function PhantomWalletConnect() {
     const { walletAddress, setWalletAddress } = useWallet();
+    const [avatarSrc, setAvatarSrc] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (walletAddress) {
+            const seed = parseInt(walletAddress.slice(2, 10), 16);
+            const icon = jazzicon(40, seed);
+            const svgElement = new XMLSerializer().serializeToString(icon);
+            const svgBlob = new Blob([svgElement], { type: "image/svg+xml;charset=utf-8" });
+            const reader = new FileReader();
+
+            reader.onloadend = () => {
+                const base64data = reader.result;
+                const fileName = `${walletAddress}.svg`;
+                fetch('/api/save-avatar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fileName, data: base64data })
+                }).then(response => {
+                    if (response.ok) {
+                        setAvatarSrc(`/images/avatars/${fileName}`);
+                    }
+                });
+            };
+
+            reader.readAsDataURL(svgBlob);
+        }
+    }, [walletAddress]);
 
     const connectWallet = async () => {
         if (!("solana" in window)) {
@@ -106,6 +133,7 @@ export default function PhantomWalletConnect() {
 
         setWalletAddress(null);
         localStorage.removeItem("phantom_wallet");
+        setAvatarSrc(null);
     };
 
     const shortenAddress = (address: string) => {
@@ -117,9 +145,15 @@ export default function PhantomWalletConnect() {
             {walletAddress ? (
                 <UserMenu
                     name={shortenAddress(walletAddress)}
-                    size={16}
+                    subline="Wallet connected"
+                    tagProps={{
+                        label: '0',
+                        variant: 'brand'
+                    }}
                     avatarProps={{
-                        empty: true
+                        empty: !avatarSrc,
+                        loading: !avatarSrc,
+                        src: avatarSrc || ""
                     }}
                     dropdown={
                         <>

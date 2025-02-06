@@ -9,7 +9,8 @@ import {
     Button,
     Card,
     Heading,
-    Background
+    Background,
+    Input
 } from "@/once-ui/components";
 import ProphetNavigation from "@/components/ProphetNavigation";
 import { useWallet } from "@/components/PhantomWalletConnect";
@@ -25,14 +26,24 @@ interface Claim {
     status_description: string;
     author: string;
     created_at: string;
+    market?: { // We might add optional market data here if we fetch it from the backend
+        id: number;
+    };
 }
 
 export default function ClaimDetailPage() {
     const params = useParams<{ slug: string }>();
     const [claim, setClaim] = useState<Claim | null>(null);
     const [loading, setLoading] = useState(true);
+    const [trueTotalPrice, setTrueTotalPrice] = useState<number>(0);  // Total price for TRUE shares
+    const [falseTotalPrice, setFalseTotalPrice] = useState<number>(0);  // Total price for FALSE shares
+
     const { walletAddress } = useWallet();
     const router = useRouter();
+
+    // NEW state for buying shares
+    const [buyAmount, setBuyAmount] = useState<string>("");  // string to store user input
+    const [feedback, setFeedback] = useState<string>("");    // to display success/error messages
 
     useEffect(() => {
         if (!params?.slug) return;
@@ -63,34 +74,68 @@ export default function ClaimDetailPage() {
 
         fetchClaim();
     }, [params?.slug, router]);
+    useEffect(() => {
+        if (claim && buyAmount) {
+            const amountNum = parseFloat(buyAmount) || 0;
 
-    const handleCreateMarket = async () => {
+            const truePricePerShare = claim.market?.current_true_price
+                ? parseFloat(claim.market.current_true_price)
+                : 0;
+            const falsePricePerShare = claim.market?.current_false_price
+                ? parseFloat(claim.market.current_false_price)
+                : 0;
+
+            // Recalculate prices after claim update or buyAmount change
+            setTrueTotalPrice(amountNum * truePricePerShare);
+            setFalseTotalPrice(amountNum * falsePricePerShare);
+        }
+    }, [claim, buyAmount]);
+
+
+    // NEW function to buy shares
+    const handleBuy = async (side: "TRUE" | "FALSE") => {
         if (!walletAddress) {
             alert("Connect your wallet first!");
             return;
         }
+        if (!buyAmount || parseFloat(buyAmount) <= 0) {
+            alert("Enter a positive number of shares to buy.");
+            return;
+        }
+        if (!claim?.market) {
+            alert("No market found for this claim. (Is the claim in 'market_created' status?)");
+            return;
+        }
 
         try {
-            const response = await fetch(`${API_URL}/markets/create/${claim?.id}/`, {
+            const response = await fetch(`${API_URL}/markets/${claim.market.id}/buy/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ wallet_address: walletAddress }),
+                body: JSON.stringify({
+                    side,
+                    amount: buyAmount,
+                    wallet_address: walletAddress,
+                }),
             });
 
+            const data = await response.json();
+
             if (response.ok) {
-                alert("Market created successfully!");
-                const updatedClaimRes = await fetch(`${API_URL}/claims/${claim?.id}/`);
+                setFeedback(`Successfully bought ${data.bought_amount} on side ${data.side}`);
+
+                // Refetch the updated claim to get new prices
+                const updatedClaimRes = await fetch(`${API_URL}/claims/${claim.id}/`);
                 if (updatedClaimRes.ok) {
                     const updatedClaimData = await updatedClaimRes.json();
-                    setClaim(updatedClaimData);
+                    setClaim(updatedClaimData);  // Update state with the new claim data
                 }
-                router.push(`/claims/${claim?.slug}`);
             } else {
-                const data = await response.json();
-                alert(`Error: ${data.error}`);
+                setFeedback(`Error: ${data.error || "Unknown error"}`);
             }
+
         } catch (error) {
-            console.error("Market creation failed", error);
+            console.error("Buy request failed:", error);
+            setFeedback(`Error purchasing shares. Check console.`);
         }
     };
 
@@ -149,31 +194,61 @@ export default function ClaimDetailPage() {
                                 Author: {claim.author === "11111111111111111111111111111111" ? "Unknown (No wallet connected)" : claim.author}
                             </Text>
 
-                            <Row gap="12" horizontal="start">
-                                {walletAddress && claim.verification_status_name === "ai_reviewed" && (
-                                    <Button
-                                        onClick={handleCreateMarket}
-                                        variant="primary"
-                                        size="m"
-                                        label="Create Market"
-                                    />
-                                )}
+                            {/* Show buy UI only if market is created */}
+                            {walletAddress && claim.verification_status_name === "market_created" && (
+                                <>
+                                    {/* Input to specify how many shares to buy */}
+                                    <Row gap="8" horizontal="start" align="center">
+                                        <Text size="s">Shares to Buy:</Text>
+                                        <Input
+                                            value={buyAmount}
+                                            onChange={(e) => setBuyAmount(e.target.value)}
+                                            placeholder="Enter number of shares"
+                                            type="number"
+                                        />
 
-                                {walletAddress && claim.verification_status_name === "market_created" && (
-                                    <>
+
+                                    </Row>
+
+                                    {/* NEW: Display current prices */}
+                                    <Row gap="8" horizontal="start" align="center">
+                                        <Text size="s">Total Price (TRUE): {trueTotalPrice.toFixed(8)} SOL</Text>
+                                    </Row>
+
+                                    <Row gap="8" horizontal="start" align="center">
+                                        <Text size="s">Total Price (FALSE): {falseTotalPrice.toFixed(8)} SOL</Text>
+                                    </Row>
+
+                                    <Row gap="12" horizontal="start" align="center">
+                                        <Text size="s">
+                                            Current TRUE Price: {claim.market?.current_true_price || "N/A"} SOL/share
+                                        </Text>
+                                        <Text size="s">
+                                            Current FALSE Price: {claim.market?.current_false_price || "N/A"} SOL/share
+                                        </Text>
+                                    </Row>
+
+                                    <Row gap="12" horizontal="start">
+                                        {/* Buy TRUE */}
                                         <Button
                                             variant="success"
-                                            onClick={() => alert("You voted TRUE")}
-                                            label="TRUE"
+                                            onClick={() => handleBuy("TRUE")}
+                                            label="Buy TRUE"
                                         />
+                                        {/* Buy FALSE */}
                                         <Button
                                             variant="danger"
-                                            onClick={() => alert("You voted FALSE")}
-                                            label="FALSE"
+                                            onClick={() => handleBuy("FALSE")}
+                                            label="Buy FALSE"
                                         />
-                                    </>
-                                )}
-                            </Row>
+                                    </Row>
+                                </>
+                            )}
+                            {feedback && (
+                                <Text align="left" size="s" style={{ color: "blue" }}>
+                                    {feedback}
+                                </Text>
+                            )}
                         </Column>
                     ) : (
                         <Text>Claim not found.</Text>
