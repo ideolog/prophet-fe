@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState, createContext, useContext } from "react";
-import { Button, Flex, Text, UserMenu, Option, Avatar, Line } from "@/once-ui/components";
-import jazzicon from "@metamask/jazzicon";
+import { Button, Flex, Text, UserMenu, Option, Avatar, Line, Dropdown } from "@/once-ui/components";
 
 const WalletContext = createContext(null);
 
@@ -65,31 +64,6 @@ export default function PhantomWalletConnect() {
     const { walletAddress, setWalletAddress } = useWallet();
     const [avatarSrc, setAvatarSrc] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (walletAddress) {
-            const seed = parseInt(walletAddress.slice(2, 10), 16);
-            const icon = jazzicon(40, seed);
-            const svgElement = new XMLSerializer().serializeToString(icon);
-            const svgBlob = new Blob([svgElement], { type: "image/svg+xml;charset=utf-8" });
-            const reader = new FileReader();
-
-            reader.onloadend = () => {
-                const base64data = reader.result;
-                const fileName = `${walletAddress}.svg`;
-                fetch('/api/save-avatar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ fileName, data: base64data })
-                }).then(response => {
-                    if (response.ok) {
-                        setAvatarSrc(`/images/avatars/${fileName}`);
-                    }
-                });
-            };
-
-            reader.readAsDataURL(svgBlob);
-        }
-    }, [walletAddress]);
 
     const connectWallet = async () => {
         if (!("solana" in window)) {
@@ -157,12 +131,24 @@ export default function PhantomWalletConnect() {
                     }}
                     dropdown={
                         <>
-                            <Flex padding="2" fillWidth>
+                            <Dropdown
+                                padding="2"
+                                radius="1"
+                                width="400px"
+                                gap="2"
+                            >
                                 <Option
-                                    label={<Text as="div" variant="body-strong-m" paddingBottom="2">Disconnect</Text>}
+                                    value="my-positions"
+                                    label="My positions"
+                                    href="/my-positions"
+                                />
+
+                                <Line />
+                                <Option
+                                    label="Disconnect"
                                     onClick={disconnectWallet}
                                 />
-                            </Flex>
+                            </Dropdown>
                         </>
                     }
                 />

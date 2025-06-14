@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@floating-ui/react-dom": "^2.1.1",
-    "@metamask/jazzicon": "^2.0.0",
+    "@heroui/react": "^2.6.14",
     "@solana/wallet-adapter-base": "^0.9.23",
     "@solana/wallet-standard": "^1.1.4",
     "boring-avatars": "^1.11.2",
