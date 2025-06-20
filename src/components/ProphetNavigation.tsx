@@ -15,6 +15,7 @@ export default function Navigation() {
                 <Row gap="12">
                     <Button href="/markets" size="s" label="Markets" variant="tertiary" />
                     <Button href="/create-claim" size="s" label="Create Claim" variant="tertiary" />
+                    <Button href="/create-claims-from-text" size="s" label="Submit text" variant="tertiary" />
                     <PhantomWalletConnect onWalletConnected={(walletAddress) => console.log(walletAddress)} />
                 </Row>
             </Row>

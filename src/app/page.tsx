@@ -131,6 +131,13 @@ export default function Home() {
               variant="tertiary"
             />
             <Button
+                href="/create-claim-from-text"
+                size="s"
+                label="Submit text"
+                weight="default"
+                variant="tertiary"
+            />
+            <Button
               href="/create-claim"
               size="s"
               label="Create claim"

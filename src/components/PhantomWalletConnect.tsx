@@ -16,41 +16,30 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         if (typeof window === "undefined") return;
 
         const checkWalletStatus = async () => {
-            if ("solana" in window) {
-                const provider = (window as any).solana;
+            try {
+                const provider = (window as any)?.solana;
                 if (provider?.isPhantom) {
-                    try {
-                        const savedWallet = localStorage.getItem("phantom_wallet");
-                        if (provider.isConnected && savedWallet) {
-                            setWalletAddress(savedWallet);
-                        } else {
-                            const response = await provider.connect({ onlyIfTrusted: true });
-                            if (response?.publicKey) {
-                                const connectedWallet = response.publicKey.toString();
-                                setWalletAddress(connectedWallet);
-                                localStorage.setItem("phantom_wallet", connectedWallet);
-                            } else {
-                                setWalletAddress(null);
-                                localStorage.removeItem("phantom_wallet");
-                            }
+                    const savedWallet = localStorage.getItem("phantom_wallet");
+                    if (provider.isConnected && savedWallet) {
+                        setWalletAddress(savedWallet);
+                    } else {
+                        const response = await provider.connect({ onlyIfTrusted: true });
+                        if (response?.publicKey) {
+                            const connectedWallet = response.publicKey.toString();
+                            setWalletAddress(connectedWallet);
+                            localStorage.setItem("phantom_wallet", connectedWallet);
                         }
-                    } catch (error) {
-                        console.log("Phantom Wallet is not connected.");
-                        setWalletAddress(null);
                     }
                 }
-            } else {
-                console.error("Phantom Wallet not installed.");
+                // ✅ Silent skip if Phantom is not available
+            } catch (error) {
+                setWalletAddress(null);
             }
         };
 
         checkWalletStatus();
-
         window.addEventListener("focus", checkWalletStatus);
-
-        return () => {
-            window.removeEventListener("focus", checkWalletStatus);
-        };
+        return () => window.removeEventListener("focus", checkWalletStatus);
     }, []);
 
     return (
@@ -66,36 +55,31 @@ export default function PhantomWalletConnect() {
 
 
     const connectWallet = async () => {
-        if (!("solana" in window)) {
-            alert("Phantom Wallet is not installed!");
-            return;
-        }
+        const provider = (window as any)?.solana;
 
-        const provider = (window as any).solana;
-        if (!provider?.isPhantom) {
-            alert("Please install Phantom Wallet.");
+        if (!provider || !provider.isPhantom) {
+            alert("Phantom Wallet not detected, skipping wallet connection.");
             return;
         }
 
         try {
             const response = await provider.connect();
             const walletAddress = response.publicKey.toString();
-
             const message = `Sign this message to authenticate with CrowdProphet: ${new Date().toISOString()}`;
             const encodedMessage = new TextEncoder().encode(message);
             const signedMessage = await provider.signMessage(encodedMessage, "utf8");
 
             if (signedMessage) {
-                console.log("Wallet successfully authenticated.");
                 setWalletAddress(walletAddress);
                 localStorage.setItem("phantom_wallet", walletAddress);
             } else {
                 throw new Error("Message signing failed.");
             }
         } catch (error) {
-            console.error("Failed to connect and authenticate wallet:", error);
+            console.error("Wallet connection error:", error);
         }
     };
+
 
     const disconnectWallet = async () => {
         if ("solana" in window) {
